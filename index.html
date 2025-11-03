@@ -1,4 +1,527 @@
 <!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>N-X-U Interface | Orchestrated Intelligence</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <style>
+    .active-badge { background: linear-gradient(90deg,#06b6d4,#7c3aed); }
+    #neuronCanvas { width:100%; height:320px; display:block; }
+    #worldAICanvas { width:100%; height:260px; display:block; }
+    .chip { padding:4px 8px; border-radius:999px; font-size:12px; }
+  </style>
+</head>
+<body class="bg-gray-900 text-gray-100 font-sans">
+  <header class="text-center py-6 bg-gray-800 shadow-lg">
+    <h1 class="text-4xl font-bold text-indigo-400">🧠 N-X-U: Orchestrated General Intelligence</h1>
+    <p class="text-gray-400 mt-2">Fusion of GPT-5 • Claude 3.7 Sonnet • Gemini 2.5 Pro</p>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+    <!-- Core Orchestrator Panel -->
+    <section class="col-span-1 lg:col-span-3 bg-gray-800 p-6 rounded-2xl shadow-lg">
+      <div class="flex justify-between items-center">
+        <div>
+          <h2 class="text-2xl font-semibold text-indigo-300 mb-1">Central Brain Dashboard</h2>
+          <p class="text-gray-400">Contrôlez et activez les modules — réel ou simulé. (Voir les notes de sécurité pour l'intégration des clés).</p>
+        </div>
+        <div class="flex items-center space-x-3">
+          <button id="openAdmin" class="bg-gray-700 px-3 py-2 rounded">⚙️ Admin</button>
+          <a id="githubLink" href="https://github.com/Sav-art/NeuraX-ultime" target="_blank" class="bg-indigo-600 px-3 py-2 rounded">Voir sur GitHub</a>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+        <div class="bg-gray-700 rounded-xl p-4">
+          <div class="flex justify-between items-start">
+            <h3 class="text-xl text-indigo-200 mb-2">GPT Module</h3>
+            <span id="gptBadge" class="text-xs px-2 py-1 rounded text-gray-900 bg-yellow-400">inactive</span>
+          </div>
+          <p class="text-gray-400">Text / multimédia — routage vers l'API OpenAI (proxy requis).</p>
+          <div class="mt-4 flex items-center space-x-2">
+            <button id="activateGpt" class="bg-indigo-500 hover:bg-indigo-600 px-3 py-1 rounded">Activer</button>
+            <button id="gptConsole" class="bg-gray-600 px-3 py-1 rounded">Ouvrir Console</button>
+            <a id="gptDocs" href="https://platform.openai.com/docs" target="_blank" class="bg-transparent border border-gray-600 px-3 py-1 rounded">Docs</a>
+          </div>
+        </div>
+
+        <div class="bg-gray-700 rounded-xl p-4">
+          <div class="flex justify-between items-start">
+            <h3 class="text-xl text-indigo-200 mb-2">Claude Module</h3>
+            <span id="claudeBadge" class="text-xs px-2 py-1 rounded text-gray-900 bg-yellow-400">inactive</span>
+          </div>
+          <p class="text-gray-400">Ethics & safety — routage vers Anthropic via un backend proxy.</p>
+          <div class="mt-4 flex items-center space-x-2">
+            <button id="activateClaude" class="bg-green-500 hover:bg-green-600 px-3 py-1 rounded">Activer</button>
+            <button id="claudeConsole" class="bg-gray-600 px-3 py-1 rounded">Ouvrir Console</button>
+            <a id="claudeDocs" href="https://www.anthropic.com/" target="_blank" class="bg-transparent border border-gray-600 px-3 py-1 rounded">Docs</a>
+          </div>
+        </div>
+
+        <div class="bg-gray-700 rounded-xl p-4">
+          <div class="flex justify-between items-start">
+            <h3 class="text-xl text-indigo-200 mb-2">Gemini Module</h3>
+            <span id="geminiBadge" class="text-xs px-2 py-1 rounded text-gray-900 bg-yellow-400">inactive</span>
+          </div>
+          <p class="text-gray-400">Long-context / multimodal — routage vers Google Gemini (backend requis).</p>
+          <div class="mt-4 flex items-center space-x-2">
+            <button id="activateGemini" class="bg-yellow-500 hover:bg-yellow-600 px-3 py-1 rounded">Activer</button>
+            <button id="geminiConsole" class="bg-gray-600 px-3 py-1 rounded">Ouvrir Console</button>
+            <a id="geminiDocs" href="https://developers.google.com/ai" target="_blank" class="bg-transparent border border-gray-600 px-3 py-1 rounded">Docs</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="bg-gray-800 p-6 rounded-2xl shadow-lg lg:col-span-2">
+      <h2 class="text-2xl font-semibold text-indigo-300 mb-4">Neural Activity & Animation</h2>
+      <canvas id="neuronCanvas"></canvas>
+      <div class="mt-3 text-sm text-gray-400">Statut du cerveau : <span id="coreStatus">inactive</span></div>
+    </section>
+
+    <section class="bg-gray-800 p-6 rounded-2xl shadow-lg lg:col-span-1">
+      <h2 class="text-2xl font-semibold text-indigo-300 mb-4">Applications & Tools</h2>
+      <ul class="space-y-3">
+        <li class="flex justify-between items-center"><span>Speech Synthesis</span><div class="space-x-2"><button id="launchTTS" class="bg-indigo-500 px-3 py-1 rounded">Lancer</button><a id="ttsDocs" href="#" class="text-sm text-gray-400">(Web Speech API)</a></div></li>
+        <li class="flex justify-between items-center"><span>Auto-Repair Engine</span><div class="space-x-2"><button id="runRepair" class="bg-indigo-500 px-3 py-1 rounded">Exécuter</button><button id="repairLog" class="bg-gray-600 px-3 py-1 rounded">Voir rapport</button></div></li>
+        <li class="flex justify-between items-center"><span>Neural Logs (JSON)</span><div class="space-x-2"><button id="viewLogs" class="bg-indigo-500 px-3 py-1 rounded">Voir</button><a id="downloadLogs" href="#" download="neural_logs.json" class="bg-gray-600 px-3 py-1 rounded">Télécharger</a></div></li>
+        <li class="flex justify-between items-center"><span>Language Interface</span><div class="space-x-2"><select id="langSelect" class="bg-gray-700 px-3 py-1 rounded"><option value="fr">FR</option><option value="en">EN</option><option value="es">ES</option></select></div></li>
+      </ul>
+      <div class="mt-6 text-sm text-yellow-300">Notes: Pour des raisons de sécurité, les appels directs aux APIs publiques doivent se faire via un backend proxy contenant vos clés.</div>
+    </section>
+
+    <section class="bg-gray-800 p-6 rounded-2xl shadow-lg col-span-1 lg:col-span-3">
+      <h2 class="text-2xl font-semibold text-indigo-300 mb-4">AI Command Console</h2>
+      <textarea id="inputArea" class="w-full h-40 bg-gray-700 text-gray-200 p-4 rounded resize-none" placeholder="Tape ta requête pour N-X-U..."></textarea>
+      <div class="flex justify-between mt-3">
+        <div class="flex items-center space-x-2">
+          <button id="sendBtn" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded">Envoyer</button>
+          <button id="clearConsole" class="bg-gray-600 px-4 py-2 rounded">Effacer</button>
+        </div>
+        <div class="text-sm text-gray-400">Logs sauvegardés localement (simulation). Voir export.</div>
+      </div>
+      <div id="responseArea" class="bg-gray-900 mt-4 p-4 rounded h-56 overflow-y-auto text-gray-300"></div>
+    </section>
+
+    <!-- Global AI Governance Panel -->
+    <section class="bg-gray-800 p-6 rounded-2xl shadow-lg col-span-1 lg:col-span-3 mt-4">
+      <h2 class="text-2xl font-semibold text-pink-300 mb-4">🌐 Global AI Intelligence Governance</h2>
+      <p class="text-gray-400 mb-4">Supervision mondiale — coordination, analyse, synchronisation et pilotage des intelligences distribuées.</p>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-gray-700 rounded-xl p-4">
+          <h3 class="text-lg text-pink-200 mb-2">Monitoring Global</h3>
+          <p class="text-gray-400 text-sm">Analyse temps réel des IA interconnectées : charge, sécurité, performance.</p>
+          <button id="enableMonitoring" class="mt-3 bg-pink-600 hover:bg-pink-700 px-3 py-1 rounded w-full">Activer Monitoring</button>
+          <div class="mt-2"><span id="monitorStatus" class="chip bg-yellow-400 text-gray-900">offline</span></div>
+        </div>
+        <div class="bg-gray-700 rounded-xl p-4">
+          <h3 class="text-lg text-pink-200 mb-2">Synchronisation Universelle</h3>
+          <p class="text-gray-400 text-sm">Coordonne les modules (OpenAI, Anthropic, Google) — cohérence optimale.</p>
+          <button id="syncAll" class="mt-3 bg-pink-600 hover:bg-pink-700 px-3 py-1 rounded w-full">Synchroniser</button>
+          <div class="mt-2"><span id="syncStatus" class="chip bg-yellow-400 text-gray-900">idle</span></div>
+        </div>
+        <div class="bg-gray-700 rounded-xl p-4">
+          <h3 class="text-lg text-pink-200 mb-2">Gestion des Risques & Sécurité</h3>
+          <p class="text-gray-400 text-sm">Détection d’anomalies, isolement automatique, réparations proactives.</p>
+          <button id="runScanner" class="mt-3 bg-pink-600 hover:bg-pink-700 px-3 py-1 rounded w-full">Scanner</button>
+          <div class="mt-2"><span id="scanStatus" class="chip bg-yellow-400 text-gray-900">idle</span></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Global Intelligence Map -->
+  <section class="bg-gray-800 p-6 rounded-2xl shadow-lg max-w-7xl mx-auto mt-8">
+    <h2 class="text-2xl font-semibold text-pink-300 mb-4">🗺️ Carte de l’Intelligence Mondiale</h2>
+    <p class="text-gray-400 mb-4">Visualisation globale de l’activité neuronale entre les serveurs, clusters et réseaux externes.</p>
+    <canvas id="worldAICanvas" class="w-full h-64 bg-gray-900 rounded"></canvas>
+  </section>
+
+  <footer class="text-center py-6 text-gray-500 bg-gray-800 mt-10">
+    <p>© 2025 N-X-U Initiative | Project by Sav'art | Deployed on GitHub Pages</p>
+  </footer>
+
+  <div id="adminModal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center">
+    <div class="bg-gray-800 p-6 rounded-lg w-full max-w-xl">
+      <h3 class="text-xl text-indigo-300 mb-3">Admin — Clés API & Options</h3>
+      <p class="text-sm text-gray-400 mb-3">Pour test local uniquement. Déployez un backend sécurisé pour production.</p>
+      <div class="grid grid-cols-1 gap-3">
+        <input id="openaiKey" placeholder="OpenAI API Key" class="bg-gray-700 p-2 rounded" />
+        <input id="anthropicKey" placeholder="Anthropic API Key" class="bg-gray-700 p-2 rounded" />
+        <input id="googleKey" placeholder="Google Cloud Key" class="bg-gray-700 p-2 rounded" />
+      </div>
+      <div class="mt-4 flex justify-between items-center">
+        <div class="text-sm text-gray-400">Mode d'appel:</div>
+        <div class="space-x-2">
+          <button id="saveAdmin" class="bg-green-600 px-3 py-2 rounded">Sauvegarder</button>
+          <button id="showServerExample" class="bg-indigo-500 px-3 py-2 rounded">Voir exemple backend</button>
+          <button id="closeAdmin" class="bg-gray-600 px-3 py-2 rounded">Fermer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  // Wrap all initialization in DOMContentLoaded to avoid null refs
+  document.addEventListener('DOMContentLoaded', () => {
+    // Utility - escape HTML
+    function escapeHtml(unsafe) { return String(unsafe).replace(/[&<>"'`]/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;','`':'&#096;'}[m];}); }
+
+    // Elements
+    const canvas = document.getElementById('neuronCanvas');
+    const worldCanvas = document.getElementById('worldAICanvas');
+    const openAdminBtn = document.getElementById('openAdmin');
+    const closeAdminBtn = document.getElementById('closeAdmin');
+    const saveAdminBtn = document.getElementById('saveAdmin');
+    const showServerExampleBtn = document.getElementById('showServerExample');
+
+    const activateGptBtn = document.getElementById('activateGpt');
+    const activateClaudeBtn = document.getElementById('activateClaude');
+    const activateGeminiBtn = document.getElementById('activateGemini');
+
+    const sendBtn = document.getElementById('sendBtn');
+    const clearConsoleBtn = document.getElementById('clearConsole');
+    const inputArea = document.getElementById('inputArea');
+    const responseArea = document.getElementById('responseArea');
+
+    const launchTTS = document.getElementById('launchTTS');
+    const runRepair = document.getElementById('runRepair');
+    const repairLog = document.getElementById('repairLog');
+    const viewLogs = document.getElementById('viewLogs');
+    const downloadLogs = document.getElementById('downloadLogs');
+
+    const enableMonitoringBtn = document.getElementById('enableMonitoring');
+    const syncAllBtn = document.getElementById('syncAll');
+    const runScannerBtn = document.getElementById('runScanner');
+
+    const monitorStatusEl = document.getElementById('monitorStatus');
+    const syncStatusEl = document.getElementById('syncStatus');
+    const scanStatusEl = document.getElementById('scanStatus');
+
+    // --- Neural animation setup (Three.js) ---
+    let renderer, scene, camera, points = [], lines = [];
+    function initThree() {
+      if (!canvas) return;
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      const rect = canvas.getBoundingClientRect();
+      const w = Math.max(300, rect.width || 600);
+      const h = Math.max(200, rect.height || 320);
+      renderer.setSize(w, h, false);
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 1000);
+      camera.position.z = 80;
+
+      // create neurons
+      const neuronCount = 60;
+      for (let i = 0; i < neuronCount; i++) {
+        const x = (Math.random() - 0.5) * 120;
+        const y = (Math.random() - 0.5) * 60;
+        const z = (Math.random() - 0.5) * 60;
+        const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const sphere = new THREE.Mesh(new THREE.SphereGeometry(1.2, 10, 10), material);
+        sphere.position.set(x, y, z);
+        scene.add(sphere);
+        points.push(sphere);
+      }
+      const lineMaterial = new THREE.LineBasicMaterial({ color: 0x7c3aed, transparent: true, opacity: 0.25 });
+      for (let i = 0; i < points.length; i++) {
+        for (let j = i + 1; j < points.length; j++) {
+          if (Math.random() > 0.94) {
+            const geom = new THREE.BufferGeometry().setFromPoints([points[i].position, points[j].position]);
+            const line = new THREE.Line(geom, lineMaterial);
+            scene.add(line);
+            lines.push(line);
+          }
+        }
+      }
+
+      animateNeurons();
+      // make responsive
+      window.addEventListener('resize', fitCanvas);
+    }
+
+    function fitCanvas() {
+      if (!canvas || !renderer || !camera) return;
+      const rect = canvas.getBoundingClientRect();
+      const width = Math.max(300, rect.width);
+      const height = Math.max(200, rect.height);
+      renderer.setSize(width, height, false);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    }
+
+    let pulse = 0;
+    function animateNeurons() {
+      if (!renderer || !scene || !camera) return;
+      pulse += 0.02;
+      points.forEach((p, idx) => {
+        p.scale.setScalar(0.9 + 0.2*Math.sin(pulse + idx));
+        p.rotation.x += 0.002 * (idx%3+1);
+        p.rotation.y += 0.003 * (idx%2+1);
+      });
+      lines.forEach((l, idx) => { if (l && l.material) l.material.opacity = 0.08 + 0.15*Math.abs(Math.sin(pulse + idx)); });
+      renderer.render(scene, camera);
+      requestAnimationFrame(animateNeurons);
+    }
+
+    initThree();
+    fitCanvas();
+
+    // --- World AI Map (canvas) ---
+    let worldCtx, worldNodes = [];
+    function initWorldMap() {
+      if (!worldCanvas) return;
+      worldCtx = worldCanvas.getContext('2d');
+      resizeWorld();
+      // create sample nodes (mocked clusters)
+      worldNodes = Array.from({length: 24}, (_, i) => ({
+        id: i+1,
+        x: Math.random()*worldCanvas.width,
+        y: Math.random()*worldCanvas.height,
+        load: Math.random(),
+        status: Math.random()>0.95? 'alert':'ok'
+      }));
+      drawWorld();
+      window.addEventListener('resize', resizeWorld);
+    }
+    function resizeWorld() {
+      if (!worldCanvas) return;
+      worldCanvas.width = worldCanvas.clientWidth;
+      worldCanvas.height = worldCanvas.clientHeight;
+      drawWorld();
+    }
+    function drawWorld() {
+      if (!worldCtx) return;
+      worldCtx.clearRect(0,0,worldCanvas.width, worldCanvas.height);
+      worldNodes.forEach(n => {
+        // pulsing size by load
+        const r = 6 + n.load*10;
+        worldCtx.beginPath();
+        worldCtx.fillStyle = n.status === 'alert' ? '#ff6b6b' : '#7c3aed';
+        worldCtx.arc(n.x, n.y, r, 0, Math.PI*2);
+        worldCtx.fill();
+        worldCtx.fillStyle = '#ddd';
+        worldCtx.font = '10px monospace';
+        worldCtx.fillText('N'+n.id, n.x+r+4, n.y+2);
+      });
+    }
+    initWorldMap();
+
+    // --- State & UI helpers ---
+    const state = { gpt: false, claude: false, gemini: false, monitoring: false };
+    function setBadge(id, on) { const el = document.getElementById(id); if (!el) return; el.textContent = on ? 'active' : 'inactive'; el.className = on ? 'text-xs px-2 py-1 rounded text-gray-50 active-badge' : 'text-xs px-2 py-1 rounded text-gray-900 bg-yellow-400'; }
+    function setCoreStatus() { const core = document.getElementById('coreStatus'); if (!core) return; core.textContent = (state.gpt || state.claude || state.gemini) ? 'partially active' : 'inactive'; }
+    setBadge('gptBadge', false); setBadge('claudeBadge', false); setBadge('geminiBadge', false); setCoreStatus();
+
+    // Activation handlers
+    activateGptBtn?.addEventListener('click', () => { state.gpt = !state.gpt; setBadge('gptBadge', state.gpt); setCoreStatus(); alert((state.gpt ? 'GPT module activé' : 'GPT module désactivé') + '.'); });
+    activateClaudeBtn?.addEventListener('click', () => { state.claude = !state.claude; setBadge('claudeBadge', state.claude); setCoreStatus(); alert((state.claude ? 'Claude module activé' : 'Claude module désactivé') + '.'); });
+    activateGeminiBtn?.addEventListener('click', () => { state.gemini = !state.gemini; setBadge('geminiBadge', state.gemini); setCoreStatus(); alert((state.gemini ? 'Gemini module activé' : 'Gemini module désactivé') + '.'); });
+
+    // Admin modal controls
+    openAdminBtn?.addEventListener('click', () => { const modal = document.getElementById('adminModal'); if (!modal) return; modal.classList.remove('hidden'); modal.classList.add('flex'); });
+    closeAdminBtn?.addEventListener('click', () => { const modal = document.getElementById('adminModal'); if (!modal) return; modal.classList.add('hidden'); modal.classList.remove('flex'); });
+
+    saveAdminBtn?.addEventListener('click', () => {
+      const openai = document.getElementById('openaiKey')?.value?.trim();
+      const anthropic = document.getElementById('anthropicKey')?.value?.trim();
+      const google = document.getElementById('googleKey')?.value?.trim();
+      if (openai) localStorage.setItem('OPENAI_KEY', openai);
+      if (anthropic) localStorage.setItem('ANTHROPIC_KEY', anthropic);
+      if (google) localStorage.setItem('GOOGLE_KEY', google);
+      // also save ADMIN_KEY used for backend proxy header
+      const adminKeyInput = document.getElementById('adminKey');
+      if (adminKeyInput && adminKeyInput.value.trim()) localStorage.setItem('ADMIN_KEY', adminKeyInput.value.trim());
+      alert('Clés (test) sauvegardées localement. Pour production, déployez un backend sécurisé.');
+      const modal = document.getElementById('adminModal'); if (modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+    });
+
+    showServerExampleBtn?.addEventListener('click', () => {
+      const w = window.open('', '_blank');
+      if (!w) { alert('Impossible d’ouvrir une nouvelle fenêtre. Désactivez le bloqueur de popups et réessayez.'); return; }
+      const content = `// Exemple minimal de backend Node/Express (server.js)
+// npm install express node-fetch dotenv
+
+require('dotenv').config();
+const express = require('express');
+const fetch = require('node-fetch');
+const app = express();
+app.use(express.json());
+
+// simple auth middleware
+function requireKey(req, res, next) { const key = req.headers['x-nxu-key']; if (!key || key !== process.env.ADMIN_KEY) return res.status(401).json({ error: 'Unauthorized' }); next(); }
+
+// endpoint proxy pour OpenAI
+app.post('/api/openai', requireKey, async (req, res) => {
+  const body = req.body;
+  const r = await fetch('https://api.openai.com/v1/chat/completions', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+process.env.OPENAI_KEY}, body: JSON.stringify({ model: process.env.OPENAI_MODEL || 'gpt-4o-mini', messages:[{role:'user', content: body.prompt}] }) });
+  const data = await r.json(); res.json(data);
+});
+
+app.listen(3000, () => console.log('Proxy démarré sur :3000'));`;
+      w.document.open(); w.document.write('<pre style="white-space:pre-wrap;color:#ddd;background:#111;padding:20px;font-family:monospace">'+escapeHtml(content)+'</pre>');
+      w.document.close();
+    });
+
+    // --- Backend call helpers (expect a proxy at /api/* that requires x-nxu-key) ---
+    async function callProxy(endpoint, prompt) {
+      try {
+        const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-nxu-key': localStorage.getItem('ADMIN_KEY') || '' }, body: JSON.stringify({ prompt }) });
+        return await res.json();
+      } catch (e) { return { error: String(e) }; }
+    }
+    async function callOpenAI(prompt) { return await callProxy('/api/openai', prompt); }
+    async function callAnthropic(prompt) { return await callProxy('/api/anthropic', prompt); }
+    async function callGemini(prompt) { return await callProxy('/api/gemini', prompt); }
+
+    // Console orchestration
+    sendBtn?.addEventListener('click', async () => {
+      const input = inputArea.value.trim(); if (!input) return;
+      const time = new Date().toLocaleTimeString();
+      responseArea.innerHTML += `<p><strong>${time} — Vous:</strong> ${escapeHtml(input)}</p>`;
+
+      const calls = [];
+      if (state.gpt) calls.push(callOpenAI(input));
+      if (state.claude) calls.push(callAnthropic(input));
+      if (state.gemini) calls.push(callGemini(input));
+
+      if (calls.length === 0) {
+        const orchestrated = `Simulation: aucun module actif. Active un module ou sauvegarde tes clés pour activer les appels réels.`;
+        responseArea.innerHTML += `<p><strong>N-X-U:</strong> ${escapeHtml(orchestrated)}</p>`;
+      } else {
+        responseArea.innerHTML += `<p><em>N-X-U: Envoi aux modules...</em></p>`;
+        const results = await Promise.all(calls);
+        let merged = { sources: [], combined: '' };
+        results.forEach((r, idx) => {
+          merged.sources.push({ idx, r });
+          if (!merged.combined && r && !r.error) {
+            merged.combined = r.choices?.[0]?.message?.content || r.output?.[0]?.content || r.result || JSON.stringify(r).slice(0,500);
+          }
+        });
+        responseArea.innerHTML += `<p><strong>N-X-U (fusion):</strong> ${escapeHtml(String(merged.combined))}</p>`;
+      }
+
+      const logs = JSON.parse(localStorage.getItem('nxuLogs') || '[]');
+      logs.push({ time: new Date().toISOString(), input });
+      localStorage.setItem('nxuLogs', JSON.stringify(logs));
+      inputArea.value = '';
+      responseArea.scrollTop = responseArea.scrollHeight;
+    });
+
+    clearConsoleBtn?.addEventListener('click', () => { responseArea.innerHTML = ''; });
+
+    // Tools
+    launchTTS?.addEventListener('click', () => {
+      const text = prompt('Texte à vocaliser (ex: "Bonjour NeuraX")', 'Bonjour NeuraX');
+      if (!text) return; if (!('speechSynthesis' in window)) { alert('Synthèse vocale non supportée.'); return; }
+      const utter = new SpeechSynthesisUtterance(text); speechSynthesis.speak(utter);
+    });
+
+    runRepair?.addEventListener('click', () => {
+      const log = { time: new Date().toISOString(), action: 'auto-repair', result: 'ok', details: ['réinitialisation neurone 12', 'réparation canal I/O'] };
+      localStorage.setItem('repairLog', JSON.stringify(log)); alert('Auto-Repair exécuté — rapport créé.');
+    });
+    repairLog?.addEventListener('click', () => { const log = localStorage.getItem('repairLog'); alert(log ? log : 'Aucun rapport disponible.'); });
+
+    viewLogs?.addEventListener('click', () => {
+      const sample = JSON.parse(localStorage.getItem('nxuLogs') || '[]');
+      const w = window.open(); if (!w) { alert('Impossible d’ouvrir la fenêtre.'); return; }
+      w.document.open(); w.document.write('<pre>'+escapeHtml(JSON.stringify(sample, null, 2))+'</pre>'); w.document.close();
+      const blob = new Blob([JSON.stringify(sample, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob); if (downloadLogs) downloadLogs.href = url;
+    });
+
+    // --- Global features: Monitoring, Sync, Scanner (simulations) ---
+    function setMonitor(status) {
+      state.monitoring = status;
+      monitorStatusEl.textContent = status ? 'online' : 'offline';
+      monitorStatusEl.className = status ? 'chip bg-green-600 text-white' : 'chip bg-yellow-400 text-gray-900';
+      // visual feedback: increase world node loads when monitoring on
+      if (worldNodes && worldNodes.length) {
+        worldNodes.forEach(n => { n.load = Math.min(1, n.load + (status? 0.05 : -0.05)); });
+        drawWorld();
+      }
+    }
+
+    enableMonitoringBtn?.addEventListener('click', () => {
+      setMonitor(!state.monitoring);
+      alert(state.monitoring ? 'Monitoring global activé (simulation).' : 'Monitoring global désactivé.');
+    });
+
+    async function syncAllModules() {
+      syncStatusEl.textContent = 'syncing'; syncStatusEl.className = 'chip bg-blue-600 text-white';
+      // Simulated orchestration: ping modules and align configs (mock)
+      await new Promise(r => setTimeout(r, 1200));
+      // example: if modules active, mark reduced divergence
+      const active = [state.gpt, state.claude, state.gemini].filter(x=>x).length;
+      syncStatusEl.textContent = active ? `synced (${active})` : 'no-modules';
+      syncStatusEl.className = active ? 'chip bg-green-600 text-white' : 'chip bg-yellow-400 text-gray-900';
+      alert('Synchronisation complète (simulation).');
+    }
+    syncAllBtn?.addEventListener('click', () => { syncAllModules(); });
+
+    function runRiskScanner() {
+      scanStatusEl.textContent = 'scanning'; scanStatusEl.className = 'chip bg-orange-500 text-white';
+      // scan logs for anomalies (simple heuristic)
+      const logs = JSON.parse(localStorage.getItem('nxuLogs') || '[]');
+      const anomalies = logs.filter(e => typeof e.input === 'string' && e.input.toLowerCase().includes('error')).length;
+      setTimeout(() => {
+        if (anomalies > 0) {
+          scanStatusEl.textContent = 'issues'; scanStatusEl.className = 'chip bg-red-600 text-white';
+          alert(`Scanner détecte ${anomalies} anomalies. Voir rapport.`);
+        } else {
+          scanStatusEl.textContent = 'clean'; scanStatusEl.className = 'chip bg-green-600 text-white';
+          alert('Scanner terminé — aucun risque majeur détecté (simulation).');
+        }
+      }, 900);
+    }
+    runScannerBtn?.addEventListener('click', () => { runRiskScanner(); });
+
+    // periodic visual heartbeat when monitoring
+    let heartbeatInterval = null;
+    function startHeartbeat() {
+      if (heartbeatInterval) return;
+      heartbeatInterval = setInterval(() => {
+        // randomize some node loads and re-draw
+        if (worldNodes) worldNodes.forEach(n=>{ n.load = Math.min(1, Math.max(0, n.load + (Math.random()-0.5)*0.08)); if (Math.random()>0.995) n.status='alert'; else if (n.status==='alert' && Math.random()>0.7) n.status='ok'; });
+        drawWorld();
+      }, 1200);
+    }
+    function stopHeartbeat() { if (heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; } }
+    // toggle heartbeat with monitoring
+    const origSetMonitor = setMonitor;
+    setMonitor = (status) => { origSetMonitor(status); if (status) startHeartbeat(); else stopHeartbeat(); };
+
+    // start monitoring if previously set
+    if (localStorage.getItem('NXU_MONITOR') === 'on') setMonitor(true);
+
+    // Save ADMIN_KEY helper: expose field in modal if missing
+    (function ensureAdminField(){
+      const modal = document.getElementById('adminModal'); if (!modal) return;
+      if (!document.getElementById('adminKey')) {
+        const input = document.createElement('input');
+        input.id = 'adminKey'; input.placeholder = 'ADMIN_KEY (proxy header)'; input.className = 'bg-gray-700 p-2 rounded';
+        modal.querySelector('.grid').appendChild(input);
+      }
+    })();
+
+    // Save NXU_MONITOR when toggling
+    const origSetMonitor2 = setMonitor;
+    setMonitor = (status) => { origSetMonitor2(status); localStorage.setItem('NXU_MONITOR', status? 'on':'off'); };
+
+    // ensure world updates on resize
+    window.addEventListener('resize', () => { resizeWorld(); fitCanvas(); });
+
+  }); // DOMContentLoaded
+  </script>
+</body>
+</html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
